@@ -6,11 +6,11 @@ from django.contrib.auth import authenticate, login, logout
 from django.views.generic import UpdateView, DeleteView, ListView
 
 
-
 def get_updated_time(queryset):
     current_time = datetime.now().timestamp()
     minutes_updated = [round((current_time - article.updated_at.timestamp()) / 60) for article in queryset]
     return list(map(lambda k, v: (k, v), queryset, minutes_updated))
+
 
 class HomeView(ListView):
     model = Article
@@ -28,9 +28,6 @@ class HomeView(ListView):
         return context
 
 
-
-
-
 class SearchResults(HomeView):
     def get_queryset(self):
         query = self.request.GET.get('q')
@@ -38,6 +35,13 @@ class SearchResults(HomeView):
         filtered = qs.filter(title__iregex=query)
         print(filtered)
         return filtered
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data()
+        qs = get_updated_time(self.get_queryset())
+        context['articles'] = qs
+        return context
+
 
 # DetailView
 
